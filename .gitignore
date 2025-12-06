@@ -36,3 +36,8 @@ env/
 # Output from the search tool
 # ---------------------------
 search-results/
+
+# ------------------------------------
+# Folder with the files to be searched
+# ------------------------------------
+files-to-examine/

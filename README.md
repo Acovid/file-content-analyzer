@@ -28,11 +28,12 @@ The script is interactive and guides the user step by step.
 - [Project Structure](#-project-structure)  
 - [Using `search-strings.txt`](#-using-search-stringstxt)  
 - [Running the Program](#-running-the-program)  
+- [Launcher (`run-search.command`)](#-launcher-run-searchcommand)  
+- [Custom Icon](#-custom-icon)  
 - [What the Program Does](#-what-the-program-does)  
 - [Output Report](#-output-report)  
 - [Excluded Directories](#-excluded-directories)  
 - [Demo / Example Runs](#-demo--example-runs)  
-- [Continuous Integration (optional)](#-continuous-integration-optional)  
 - [Future Enhancements](#-future-enhancements-ideas)  
 - [License](#-license)
 
@@ -60,8 +61,10 @@ A minimal setup looks like this:
 
 ```text
 search_string.py      # main program
+run-search.command    # macOS clickable launcher (opens Terminal and runs the tool)
 search-strings.txt    # optional input file for search terms
-search-results/       # auto-created folder for output reports
+icon.png              # icon for the launcher (e.g. Python + magnifying glass)
+search-results/       # auto-created folder for output reports (ignored by Git)
 .gitignore
 README.md
 ```
@@ -107,7 +110,7 @@ You can then optionally add more search strings manually.
 
 ## ▶️ Running the Program
 
-From the project folder:
+From the project folder (using Python directly):
 
 ```bash
 python search_string.py
@@ -115,28 +118,58 @@ python search_string.py
 
 The tool will prompt you for:
 
-1. **Search strings**
-
-   - From `search-strings.txt` (if available)  
-   - Optional manual input (one per line, empty line to finish)
-
-2. **Case sensitivity**
-
-   ```text
-   Should the search be case-sensitive? (y/n) [n]:
-   ```
-
-   - Press **ENTER** to accept the default (**no**, case-insensitive)
-
+1. **Search strings** (from `search-strings.txt` and/or manual input)  
+2. **Case sensitivity**  
 3. **Directory to search**
 
-   ```text
-   Search in the current directory where the program is? (y/n) [n]:
-   Enter full directory path to search:
-   ```
+---
 
-   - Default is **no** → pressing ENTER will ask you for a full directory path  
-   - macOS tip: in Finder, right-click the folder → hold **⌥ Option** → _Copy as Pathname_ → paste into the terminal
+## 🚀 Launcher `run-search.command`
+
+On macOS, you can run the tool by simply **double-clicking** a `.command` file.
+
+This repository includes a launcher:
+
+```text
+run-search.command
+```
+
+It:
+
+- Finds the project directory automatically (relative to its own location)  
+- Uses the virtual environment Python if `.venv/bin/python` exists  
+- Falls back to `python3` otherwise  
+- Runs `search_string.py` in a Terminal window  
+
+### Make sure it is executable:
+
+```bash
+chmod +x run-search.command
+```
+
+To use it like an app:
+
+- Option 1: Double-click `run-search.command` in Finder  
+- Option 2: Create a Desktop alias  
+  - Hold `⌥⌘` and drag `run-search.command` to the Desktop  
+  - This keeps the real file in the repo but gives you a clickable shortcut
+
+---
+
+## 🎨 Custom Icon
+
+This repo also includes an icon file (e.g. `icon.png`) you can use for your launcher.
+
+To apply it to `run-search.command` or its Desktop alias:
+
+1. Open `icon.png` in **Preview**  
+2. Press `⌘A` to select all  
+3. Press `⌘C` to copy  
+4. Right-click `run-search.command` (or its alias) → **Get Info**  
+5. Click the small icon in the top-left of the Info window (it should highlight)  
+6. Press `⌘V` to paste the new icon  
+
+Your launcher now looks like a polished app instead of a generic script file.
 
 ---
 
@@ -238,7 +271,8 @@ EXCLUDE_DIRS = {".venv", ".vscode", ".git", "node_modules", "__pycache__"}
 ### Example 1: Use `search-strings.txt` only
 
 ```text
-$ python search_string.py
+$ ./run-search.command
+
 Found search strings file '.../search-strings.txt'. Use it? (y/n) [y]:
 Do you want to add search strings manually? (y/n) [n]:
 Should the search be case-sensitive? (y/n) [n]:
@@ -263,67 +297,6 @@ Total occurrences across all files: 15
 
 Results have been saved to: search-results/search_results_error_20251205-183200.txt
 ```
-
-### Example 2: Only manual search strings
-
-```text
-$ python search_string.py
-Found search strings file '.../search-strings.txt'. Use it? (y/n) [y]:
-Do you want to add search strings manually? (y/n) [y]:
-
-Enter search strings (one per line).
-Press ENTER on an empty line when you are done.
-
-Search string: TODO
-Search string: FIXME
-Search string:
-
-Should the search be case-sensitive? (y/n) [n]:
-Search in the current directory where the program is? (y/n) [n]:
-Enter full directory path to search: /Users/aco/Projects/notes
-...
-```
-
----
-
-## 🤖 Continuous Integration (optional)
-
-If you want to add a tiny CI setup using GitHub Actions (for example, to make sure the script runs and passes basic checks), you can create:
-
-**File:** `.github/workflows/python-check.yml`
-
-```yaml
-name: Python checks
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  run-checks:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Run basic syntax check
-        run: python -m py_compile search_string.py
-```
-
-This is minimal, but it will:
-
-- Check out your code
-- Install Python
-- Ensure `search_string.py` at least compiles
-
-You can extend this later with unit tests if you add them.
 
 ---
 
