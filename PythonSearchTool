@@ -1,0 +1,4 @@
+#!/bin/bash
+PROJECT_DIR="/Users/aco/Development/myPrograms/Python/python-search-tool"
+cd "$PROJECT_DIR" || exit 1
+"$PROJECT_DIR/.venv/bin/python" search_string.py
