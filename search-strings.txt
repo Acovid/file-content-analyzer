@@ -1,0 +1,8 @@
+// Enter one search string per line.
+// Blank lines are ignored.
+// Lines starting with // are comments.
+// Example:
+// error
+// warning
+// TODO
+
