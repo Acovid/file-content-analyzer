@@ -44,7 +44,7 @@ echo
 cd "$PROJECT_DIR" || exit 1
 
 # 3) Run the main Python script
-"$PYTHON_BIN" "$PROJECT_DIR/search_string.py"
+"$PYTHON_BIN" "$PROJECT_DIR/file_content_analyzer.py"
 STATUS=$?
 
 # 4) Closing summary
