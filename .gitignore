@@ -32,10 +32,15 @@ env/
 *~
 ~$*
 
-# ---------------------------
-# Output from the search tool
-# ---------------------------
-search-results/
+# --------------------
+# Output from the tool
+# --------------------
+analysis-results/
+
+# ------------------
+# Configuration file
+# ------------------
+config.json
 
 # ------------------------------------
 # Folder with the files to be searched

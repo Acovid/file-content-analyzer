@@ -1,118 +1,152 @@
 # File Content Analyzer
 
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)]()
-[![License](https://img.shields.io/badge/license-personal%20%26%20educational-lightgrey.svg)]()
-[![Status](https://img.shields.io/badge/status-active-green.svg)]()
+A Python utility for analyzing text files across a directory tree.
 
-**File Content Analyzer** is a flexible Python-based command-line tool for analyzing text files across directory trees.
+It supports two operation modes:
 
-It supports multiple analysis modes and produces clean, human-readable reports saved to disk.
+1) **String Search**  
+   Search for one or more strings in files, count occurrences, and generate a report.
 
----
+2) **File Statistics**  
+   Count lines, words, and characters across files, including per-extension totals, and generate a report.
 
-## ✨ Features
-
-This tool can:
-
-- Recursively scan all files in a chosen directory and subdirectories
-- Provide **multiple operation modes**
-  - **String search** with occurrence counting
-  - **File statistics** (lines, words, characters)
-- Accept multiple search strings (from file and/or manual input)
-- Ignore comment lines in input files
-- Exclude specific **directories**
-- Exclude specific **file types**
-- Skip binary/unreadable files gracefully
-- Allow case-sensitive or case-insensitive search
-- Skip analyzing the program file itself
-- Generate timestamped **summary reports**
-- Save reports automatically to `search-results/`
-
-The program is fully interactive and guides the user step by step.
+The tool is interactive by default, but also supports non-interactive usage via command-line arguments.
 
 ---
 
-## 📚 Table of Contents
+## Features
 
-- Requirements
-- Installation
-- Project Structure
-- Operation Modes
-- Using search-strings.txt
-- File Type Exclusion
-- Running the Program
-- Launcher (run-search.command)
-- Custom Icon
-- Output Reports
-- Excluded Directories
-- Demo / Example Runs
-- Future Enhancements
-- License
+- Recursively scans a chosen directory and its subdirectories
+- Two modes:
+  - String search with per-string occurrence counts per file
+  - File statistics (lines / words / characters) with per-extension totals
+- Accepts multiple search strings:
+  - From `search-strings.txt` (optional)
+  - And/or manual input
+- Supports case-sensitive and case-insensitive search
+- Excludes directories such as `.venv` and `.vscode`
+- Supports file type filtering:
+  - Include-only list (process only specific extensions)
+  - Exclude list (skip specific extensions)
+- Skips unreadable/binary files gracefully
+- Skips analyzing the program file itself
+- Produces timestamped reports saved under `analysis-results/`
+- Uses persistent settings stored in `config.json`
+- Can edit configuration interactively
+- Includes unit tests (built-in `unittest`)
 
 ---
 
-## ✅ Requirements
+## Requirements
 
 - Python 3.8+
-- macOS, Linux, or Windows
-- A virtual environment is recommended
+- macOS / Linux / Windows
+- Recommended: a virtual environment
 
 ---
 
-## 📦 Installation
+## Installation
 
 Create and activate a virtual environment:
 
     python3 -m venv .venv
     source .venv/bin/activate
 
-(Windows: `.venv\Scripts\activate`)
+Windows:
+
+    .venv\Scripts\activate
+
+Install dependencies:
+
+- None required (standard library only)
 
 ---
 
-## 📂 Project Structure
+## Project Structure
+
+Typical layout:
 
     file-content-analyzer/
-    ├── search_string.py        # main program
-    ├── run-search.command      # macOS launcher
-    ├── search-strings.txt      # optional search terms file
-    ├── icon.png                # optional launcher icon
-    ├── search-results/         # auto-created output reports
-    ├── .gitignore
-    └── README.md
+    ├── file_content_analyzer.py
+    ├── run-file-content-analyzer.command
+    ├── config.json                  (optional; auto-created)
+    ├── search-strings.txt           (optional)
+    ├── analysis-results/            (auto-created; gitignored)
+    ├── fca/
+    │   ├── __init__.py
+    │   ├── cli.py
+    │   ├── config.py
+    │   ├── prompts.py
+    │   ├── traversal.py
+    │   ├── search_mode.py
+    │   ├── stats_mode.py
+    │   └── reporting.py
+    ├── tests/
+    │   ├── __init__.py
+    │   └── test_core.py
+    ├── CHANGELOG.md
+    ├── README.md
+    └── .gitignore
 
 ---
 
-## 🔧 Operation Modes
+## Running the Program
 
-When the program starts, you choose an operation:
+### Option A: Run with Python
 
-    1) Search for strings in files
-    2) Count lines, words, and characters in files
+From the project folder:
 
-### Mode 1 — String Search
+    python file_content_analyzer.py
 
-- Counts how many times each string appears in each file
-- Supports case-sensitive or insensitive search
+You will be guided through interactive prompts:
+- choose mode (search or statistics)
+- choose directory (default is NO → you enter a path)
+- configure include/exclude file types (optional)
+- and for search mode: select case sensitivity and enter search strings
 
-### Mode 2 — File Statistics
+### Option B: macOS Launcher
 
-Counts:
+The repository includes:
 
-- Lines
-- Words
-- Characters
+    run-file-content-analyzer.command
 
-Also provides totals across all files and per-file breakdown.
+Make it executable once:
+
+    chmod +x run-file-content-analyzer.command
+
+Then double-click it in Finder (or create a Desktop alias).
 
 ---
 
-## 📝 Using search-strings.txt
+## Output Reports
 
-Optional file placed next to the script.
+Reports are written to:
+
+    analysis-results/
+
+Examples:
+
+    analysis-results/string_search_20251214-112233.txt
+    analysis-results/file_stats_20251214-113015.txt
+
+Reports include:
+- operation type
+- directory analyzed
+- summary totals
+- per-file details
+- (statistics mode) per-extension totals
+
+---
+
+## Using search-strings.txt
+
+You can place an optional file:
+
+    search-strings.txt
+
+in the same folder as `file_content_analyzer.py`.
 
 Rules:
-
 - One string per line
 - Empty lines ignored
 - Lines starting with `//` are comments
@@ -120,131 +154,138 @@ Rules:
 Example:
 
     // One search string per line
-    // Comments start with //
+    // Lines starting with // are comments
     
     error
     timeout
     TODO
 
----
-
-## 🧹 File Type Exclusion
-
-You may optionally exclude file types by extension.
-
-Example prompt:
-
-    Do you want to exclude specific file types? (y/n) [n]:
-    Enter file extensions to exclude (comma-separated):
-    js,map,log,min.css
-
-Notes:
-
-- Extensions are case-insensitive
-- Do not include dots
-- Files without extensions are included by default
+When the tool starts, it will detect this file and ask whether to use it.
 
 ---
 
-## ▶️ Running the Program
+## File Type Filtering (Include / Exclude Extensions)
 
-Run directly:
+You can filter by file extension (without dots). Examples: `py`, `txt`, `js`.
 
-    python search_string.py
+### Include-only list
+If `included_extensions` is not empty, ONLY those extensions are processed.
 
-Or on macOS:
+Example:
 
-    Double-click run-search.command
+    included_extensions = ["py", "txt"]
 
----
+Processes only `.py` and `.txt` files.
 
-## 🚀 Launcher run-search.command
+### Exclude list
+`excluded_extensions` is always applied (even after include-only).
 
-The launcher:
+Example:
 
-- Automatically finds the project directory
-- Uses `.venv/bin/python` if available
-- Opens Terminal visibly
-- Displays a welcome banner
-- Keeps the window open after completion
+    excluded_extensions = ["log", "map", "min.js"]
 
-Make executable:
-
-    chmod +x run-search.command
+Note: The tool filters by the final extension (`.js`, `.css`, etc.).  
+`min.js` is not a separate extension. If you want to exclude minified assets reliably, you typically exclude by `.js` or add a filename rule later as an enhancement.
 
 ---
 
-## 🎨 Custom Icon
+## Configuration (config.json)
 
-To apply icon.png:
+The tool reads `config.json` next to the main script.  
+You can edit it manually at any time.
 
-1. Open it in Preview
-2. Select all (Cmd+A)
-3. Copy (Cmd+C)
-4. Right-click run-search.command or its alias → Get Info
-5. Click the small icon in the top-left
-6. Paste (Cmd+V)
+Example `config.json`:
 
----
+    {
+      "excluded_extensions": ["js", "map", "log"],
+      "included_extensions": [],
+      "excluded_dirs": [".venv", ".vscode", ".git", "__pycache__"]
+    }
 
-## 🧾 Output Reports
+Rules:
+- If `included_extensions` is empty: all extensions are allowed
+- If `included_extensions` is not empty: only those are allowed
+- Then `excluded_extensions` are removed
+- `excluded_dirs` are skipped during traversal
 
-Reports are saved to:
+The program also offers an interactive editor:
 
-    search-results/
+    Edit configuration? (y/n) [n]:
 
-Example filenames:
-
-    string_search_error_20251205-183200.txt
-    file_stats_lines_words_chars_20251206-101455.txt
-
-Each report includes:
-
-- Operation type
-- Directory analyzed
-- Summary totals
-- Per-file details
+If you answer yes, it will update and save `config.json`.
 
 ---
 
-## 🚫 Excluded Directories
+## Command-line Usage (Non-interactive)
 
-By default:
+You can run without prompts (or fewer prompts) using CLI flags:
 
-    EXCLUDE_DIRS = {".venv", ".vscode"}
+String search mode:
 
-You may extend this to:
+    python file_content_analyzer.py --search --dir /path/to/scan
 
-    {".venv", ".vscode", ".git", "node_modules", "__pycache__", ".idea"}
+Statistics mode:
 
----
+    python file_content_analyzer.py --stats --dir /path/to/scan
 
-## 🎬 Demo / Example Runs
+Case-sensitive search:
 
-Example startup:
+    python file_content_analyzer.py --search --case-sensitive --dir /path/to/scan
 
-    File Content Analyzer
-    ====================
-    
-    Choose an operation:
-      1) Search for strings in files
-      2) Count lines, words, and characters in files
+Include-only extensions:
 
----
+    python file_content_analyzer.py --stats --dir /path --include py,txt
 
-## 🛠 Future Enhancements
+Exclude extensions:
 
-- Regex-based searching
-- File extension include filters
-- Non-interactive CLI arguments
-- CSV / JSON exports
-- Persistent configuration file
-- Parallel scanning
-- Language-aware code metrics
+    python file_content_analyzer.py --search --dir /path --exclude js,map,log
+
+Ignore config.json entirely:
+
+    python file_content_analyzer.py --stats --dir /path --no-config
+
+Edit config and exit:
+
+    python file_content_analyzer.py --edit-config
 
 ---
 
-## 📜 License
+## Unit Tests
 
-This project is intended for **personal and educational use**.  
-Feel free to adapt, extend, and experiment.
+Tests are located in:
+
+    tests/
+
+Run all tests:
+
+    python -m unittest -v
+
+These tests cover:
+- extension normalization
+- traversal include/exclude behavior
+- excluded directory behavior
+
+---
+
+## Troubleshooting
+
+### “Can’t open file ... file_content_analyzer.py”
+This typically happens if you ran the launcher from a copied folder missing the script, or you created a copy instead of an alias.
+Make sure the launcher resides in the same project folder and points to the correct script.
+
+### The output folder is not where I expect
+Reports are always written next to the main script under:
+
+    analysis-results/
+
+If you see it elsewhere, you likely ran a different copy of the tool.
+
+### Some files are skipped
+The tool ignores files it cannot decode as text (or that error on read). This is expected behavior.
+
+---
+
+## License
+
+Personal and educational use.  
+Feel free to adapt it to your needs.

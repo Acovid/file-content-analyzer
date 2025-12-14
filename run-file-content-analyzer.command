@@ -1,6 +1,20 @@
 #!/bin/bash
+#
+# File Content Analyzer Launcher (macOS)
+#
+# This script serves as a clickable launcher for macOS.
+#
+# Responsibilities:
+# - resolve its own real location (handles aliases/symlinks)
+# - determine the project directory
+# - prefer Python from the local virtual environment if present
+# - fall back to system python otherwise
+# - open a visible Terminal window
+# - execute file_content_analyzer.py
+# - keep the Terminal open until the user closes it
+#
+# This allows the tool to be used like a lightweight desktop app.
 
-# Resolve alias/symlink to find the real script folder
 SCRIPT_PATH="$0"
 while [ -L "$SCRIPT_PATH" ]; do
   TARGET="$(readlink "$SCRIPT_PATH")"
@@ -14,52 +28,36 @@ done
 
 PROJECT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 
-# Prefer the venv Python if available, fallback to system python3
 if [ -x "$PROJECT_DIR/.venv/bin/python" ]; then
   PYTHON_BIN="$PROJECT_DIR/.venv/bin/python"
 else
   PYTHON_BIN="python3"
 fi
 
-# 1) Set a custom Terminal window title (tab title)
-printf '\033]0;Python Search Tool\007'
+printf '\033]0;File Content Analyzer\007'
 
-# 2) Welcome banner
 echo
 echo "-------------------------------------------"
-echo "  Python Multi-String Search Tool"
+echo "  File Content Analyzer"
 echo "-------------------------------------------"
 echo " Project directory:"
 echo "   $PROJECT_DIR"
 echo
-echo " This tool will:"
-echo "   - Load search strings from 'search-strings.txt' (if present)"
-echo "   - Optionally let you add more search strings"
-echo "   - Search recursively in the directory you choose"
-echo "   - Save a detailed report into 'search-results/'"
+echo " Reports folder:"
+echo "   $PROJECT_DIR/analysis-results"
 echo "-------------------------------------------"
 echo
 
-# Ensure the Python process runs with the project directory as CWD
-cd "$PROJECT_DIR" || exit 1
-
-# 3) Run the main Python script
 "$PYTHON_BIN" "$PROJECT_DIR/file_content_analyzer.py"
 STATUS=$?
 
-# 4) Closing summary
 echo
 echo "-------------------------------------------"
 if [ $STATUS -eq 0 ]; then
-  echo " Search finished."
+  echo " Finished successfully."
 else
-  echo " Search finished with exit status: $STATUS"
+  echo " Finished with exit status: $STATUS"
 fi
-echo " You can scroll up to review the details above."
-echo " The last line from the Python tool shows"
-echo " where the results file was saved in 'search-results/'."
 echo "-------------------------------------------"
 echo
-
-# 5) Keep window open and let user close it explicitly
 read -r -p "Press ENTER to close this window..." _
