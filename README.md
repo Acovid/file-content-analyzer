@@ -1,323 +1,250 @@
-# Python Multi-String File Search Tool
+# File Content Analyzer
 
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)]()
 [![License](https://img.shields.io/badge/license-personal%20%26%20educational-lightgrey.svg)]()
 [![Status](https://img.shields.io/badge/status-active-green.svg)]()
 
-A flexible command-line tool for recursively searching files for one or more strings.
+**File Content Analyzer** is a flexible Python-based command-line tool for analyzing text files across directory trees.
+
+It supports multiple analysis modes and produces clean, human-readable reports saved to disk.
+
+---
+
+## ✨ Features
 
 This tool can:
 
-- Search all files in a chosen directory and its subdirectories  
-- Accept **multiple search strings**, from a file or manual input  
-- Ignore comment lines in the search-strings file  
-- Exclude specific directories (e.g., `.venv`, `.vscode`)  
-- Count **how many times each string appears** in each file  
-- Produce a clean **summary report** saved in `search-results/`  
-- Skip binary/unreadable files gracefully  
-- Allow case-sensitive or case-insensitive search  
-- Skip searching inside the program file itself  
+- Recursively scan all files in a chosen directory and subdirectories
+- Provide **multiple operation modes**
+  - **String search** with occurrence counting
+  - **File statistics** (lines, words, characters)
+- Accept multiple search strings (from file and/or manual input)
+- Ignore comment lines in input files
+- Exclude specific **directories**
+- Exclude specific **file types**
+- Skip binary/unreadable files gracefully
+- Allow case-sensitive or case-insensitive search
+- Skip analyzing the program file itself
+- Generate timestamped **summary reports**
+- Save reports automatically to `search-results/`
 
-The script is interactive and guides the user step by step.
+The program is fully interactive and guides the user step by step.
 
 ---
 
 ## 📚 Table of Contents
 
-- [Requirements](#-requirements)  
-- [Project Structure](#-project-structure)  
-- [Using `search-strings.txt`](#-using-search-stringstxt)  
-- [Running the Program](#-running-the-program)  
-- [Launcher (`run-search.command`)](#-launcher-run-searchcommand)  
-- [Custom Icon](#-custom-icon)  
-- [What the Program Does](#-what-the-program-does)  
-- [Output Report](#-output-report)  
-- [Excluded Directories](#-excluded-directories)  
-- [Demo / Example Runs](#-demo--example-runs)  
-- [Future Enhancements](#-future-enhancements-ideas)  
-- [License](#-license)
+- Requirements
+- Installation
+- Project Structure
+- Operation Modes
+- Using search-strings.txt
+- File Type Exclusion
+- Running the Program
+- Launcher (run-search.command)
+- Custom Icon
+- Output Reports
+- Excluded Directories
+- Demo / Example Runs
+- Future Enhancements
+- License
 
 ---
 
 ## ✅ Requirements
 
-- **Python 3.8+**  
-- A virtual environment is recommended but not required.
+- Python 3.8+
+- macOS, Linux, or Windows
+- A virtual environment is recommended
 
-To create and activate a virtual environment:
+---
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+## 📦 Installation
 
-(on Windows, use `.venv\Scripts\activate`)
+Create and activate a virtual environment:
+
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+(Windows: `.venv\Scripts\activate`)
 
 ---
 
 ## 📂 Project Structure
 
-A minimal setup looks like this:
-
-```text
-search_string.py      # main program
-run-search.command    # macOS clickable launcher (opens Terminal and runs the tool)
-search-strings.txt    # optional input file for search terms
-icon.png              # icon for the launcher (e.g. Python + magnifying glass)
-search-results/       # auto-created folder for output reports (ignored by Git)
-.gitignore
-README.md
-```
-
-`search-results/` is created automatically when you run the tool and is ignored by Git.
+    file-content-analyzer/
+    ├── search_string.py        # main program
+    ├── run-search.command      # macOS launcher
+    ├── search-strings.txt      # optional search terms file
+    ├── icon.png                # optional launcher icon
+    ├── search-results/         # auto-created output reports
+    ├── .gitignore
+    └── README.md
 
 ---
 
-## 📝 Using `search-strings.txt`
+## 🔧 Operation Modes
 
-You may include a file named **`search-strings.txt`** in the same directory as `search_string.py`.
+When the program starts, you choose an operation:
 
-Format rules:
+    1) Search for strings in files
+    2) Count lines, words, and characters in files
 
-- One search string per line  
-- Empty lines are ignored  
-- Comment lines start with `//` and are ignored  
+### Mode 1 — String Search
+
+- Counts how many times each string appears in each file
+- Supports case-sensitive or insensitive search
+
+### Mode 2 — File Statistics
+
+Counts:
+
+- Lines
+- Words
+- Characters
+
+Also provides totals across all files and per-file breakdown.
+
+---
+
+## 📝 Using search-strings.txt
+
+Optional file placed next to the script.
+
+Rules:
+
+- One string per line
+- Empty lines ignored
+- Lines starting with `//` are comments
 
 Example:
 
-```text
-// Enter one search string per line.
-// Blank lines are ignored.
-// Lines starting with // are comments.
-// Example search strings:
-// error
-// timeout
+    // One search string per line
+    // Comments start with //
+    
+    error
+    timeout
+    TODO
 
-error
-failed
-TODO
-```
+---
 
-When the script starts, it will detect this file and ask:
+## 🧹 File Type Exclusion
 
-```text
-Found search strings file 'search-strings.txt'. Use it? (y/n) [y]:
-```
+You may optionally exclude file types by extension.
 
-You can then optionally add more search strings manually.
+Example prompt:
+
+    Do you want to exclude specific file types? (y/n) [n]:
+    Enter file extensions to exclude (comma-separated):
+    js,map,log,min.css
+
+Notes:
+
+- Extensions are case-insensitive
+- Do not include dots
+- Files without extensions are included by default
 
 ---
 
 ## ▶️ Running the Program
 
-From the project folder (using Python directly):
+Run directly:
 
-```bash
-python search_string.py
-```
+    python search_string.py
 
-The tool will prompt you for:
+Or on macOS:
 
-1. **Search strings** (from `search-strings.txt` and/or manual input)  
-2. **Case sensitivity**  
-3. **Directory to search**
+    Double-click run-search.command
 
 ---
 
-## 🚀 Launcher `run-search.command`
+## 🚀 Launcher run-search.command
 
-On macOS, you can run the tool by simply **double-clicking** a `.command` file.
+The launcher:
 
-This repository includes a launcher:
+- Automatically finds the project directory
+- Uses `.venv/bin/python` if available
+- Opens Terminal visibly
+- Displays a welcome banner
+- Keeps the window open after completion
 
-```text
-run-search.command
-```
+Make executable:
 
-It:
-
-- Finds the project directory automatically (relative to its own location)  
-- Uses the virtual environment Python if `.venv/bin/python` exists  
-- Falls back to `python3` otherwise  
-- Runs `search_string.py` in a Terminal window  
-
-### Make sure it is executable:
-
-```bash
-chmod +x run-search.command
-```
-
-To use it like an app:
-
-- Option 1: Double-click `run-search.command` in Finder  
-- Option 2: Create a Desktop alias  
-  - Hold `⌥⌘` and drag `run-search.command` to the Desktop  
-  - This keeps the real file in the repo but gives you a clickable shortcut
+    chmod +x run-search.command
 
 ---
 
 ## 🎨 Custom Icon
 
-This repo also includes an icon file (e.g. `icon.png`) you can use for your launcher.
+To apply icon.png:
 
-To apply it to `run-search.command` or its Desktop alias:
-
-1. Open `icon.png` in **Preview**  
-2. Press `⌘A` to select all  
-3. Press `⌘C` to copy  
-4. Right-click `run-search.command` (or its alias) → **Get Info**  
-5. Click the small icon in the top-left of the Info window (it should highlight)  
-6. Press `⌘V` to paste the new icon  
-
-Your launcher now looks like a polished app instead of a generic script file.
+1. Open it in Preview
+2. Select all (Cmd+A)
+3. Copy (Cmd+C)
+4. Right-click run-search.command or its alias → Get Info
+5. Click the small icon in the top-left
+6. Paste (Cmd+V)
 
 ---
 
-## 🔍 What the Program Does
+## 🧾 Output Reports
 
-- Recursively scans the directory you choose  
-- Skips:
+Reports are saved to:
 
-  - `.venv/`  
-  - `.vscode/`  
-  - the script file itself
+    search-results/
 
-- Attempts to read each file as text using UTF-8 (with errors ignored)  
-- For each file, counts **how many times each search string appears**  
-- Stores results as:
+Example filenames:
 
-  ```text
-  /path/to/file1.txt
-      "error" : 3 occurrence(s)
-      "timeout" : 1 occurrence(s)
-  ```
+    string_search_error_20251205-183200.txt
+    file_stats_lines_words_chars_20251206-101455.txt
 
----
+Each report includes:
 
-## 🧾 Output Report
-
-After finishing, the program writes a summary file to:
-
-```text
-search-results/
-```
-
-Example filename:
-
-```text
-search_results_error_20251205-183200.txt
-```
-
-Each report contains:
-
-- All search strings used  
-- Whether the search was case-sensitive  
-- Directory scanned  
-- Number of files with matches  
-- Total number of occurrences  
-- A detailed list of filenames + per-string counts  
-
-Example excerpt:
-
-```text
-Search results
-==============
-
-Search strings:
-  - 'error'
-  - 'timeout'
-
-Case-sensitive: False
-Directory: /Users/aco/Projects
-Total files with matches: 4
-Total occurrences across all files: 27
-
-Files containing one or more search strings:
---------------------------------------------
-
-/Users/aco/Projects/app/logs/system.log
-    'error' : 12 occurrence(s)
-    'timeout' : 3 occurrence(s)
-
-/Users/aco/Projects/app/debug.txt
-    'error' : 5 occurrence(s)
-```
+- Operation type
+- Directory analyzed
+- Summary totals
+- Per-file details
 
 ---
 
 ## 🚫 Excluded Directories
 
-By default, the program ignores:
+By default:
 
-- `.venv/`  
-- `.vscode/`
+    EXCLUDE_DIRS = {".venv", ".vscode"}
 
-These are controlled by the `EXCLUDE_DIRS` set near the top of `search_string.py`:
+You may extend this to:
 
-```python
-EXCLUDE_DIRS = {".venv", ".vscode"}
-```
-
-You can add more, e.g.:
-
-```python
-EXCLUDE_DIRS = {".venv", ".vscode", ".git", "node_modules", "__pycache__"}
-```
+    {".venv", ".vscode", ".git", "node_modules", "__pycache__", ".idea"}
 
 ---
 
 ## 🎬 Demo / Example Runs
 
-### Example 1: Use `search-strings.txt` only
+Example startup:
 
-```text
-$ ./run-search.command
-
-Found search strings file '.../search-strings.txt'. Use it? (y/n) [y]:
-Do you want to add search strings manually? (y/n) [n]:
-Should the search be case-sensitive? (y/n) [n]:
-Search in the current directory where the program is? (y/n) [n]:
-Enter full directory path to search: /Users/aco/Projects
-
-Searching for the following strings:
-  - 'error'
-  - 'timeout'
-
-Case-sensitive: False
-In directory:   /Users/aco/Projects
-
-Files containing one or more search strings:
-
-/Users/aco/Projects/app/logs/system.log
-    'error' : 12 occurrence(s)
-    'timeout' : 3 occurrence(s)
-
-Total files with matches: 1
-Total occurrences across all files: 15
-
-Results have been saved to: search-results/search_results_error_20251205-183200.txt
-```
+    File Content Analyzer
+    ====================
+    
+    Choose an operation:
+      1) Search for strings in files
+      2) Count lines, words, and characters in files
 
 ---
 
-## 🛠 Future Enhancements (Ideas)
+## 🛠 Future Enhancements
 
-Some possible directions:
-
-- **Regex search** (e.g., use `re` module for patterns)  
-- **File extension filtering** (only `.py`, `.txt`, `.md`, etc.)  
-- **Command-line arguments** using `argparse`, so you can run non-interactively:
-
-  ```bash
-  python search_string.py --dir /path --case no --strings-file my-strings.txt
-  ```
-
-- **CSV or JSON export** for easier tooling  
-- Parallel scanning for large codebases  
+- Regex-based searching
+- File extension include filters
+- Non-interactive CLI arguments
+- CSV / JSON exports
+- Persistent configuration file
+- Parallel scanning
+- Language-aware code metrics
 
 ---
 
 ## 📜 License
 
-This project is intended for personal and educational use.  
-Feel free to adapt it to your needs.
+This project is intended for **personal and educational use**.  
+Feel free to adapt, extend, and experiment.
