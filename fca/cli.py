@@ -21,6 +21,7 @@ from fca.config import (
 from fca.search_mode import run as run_search
 from fca.stats_mode import run as run_stats
 from fca.reporting import PROGRAM_NAME, PROGRAM_VERSION
+from fca.name_search_mode import run as run_name_search
 
 
 def edit_config_interactive(cfg: dict):
@@ -49,6 +50,7 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--search", action="store_true", help="Run string search mode")
     p.add_argument("--stats", action="store_true", help="Run file statistics mode")
+    p.add_argument("--names", action="store_true", help="Run filename search mode")  # ⬅ NEW
     p.add_argument("--dir", help="Directory to analyze/search")
     p.add_argument("--case-sensitive", action="store_true", help="Case-sensitive string search")
     p.add_argument("--include", help="Include only these extensions (comma-separated, no dots)")
@@ -105,11 +107,13 @@ def main():
         mode = 1
     elif args.stats:
         mode = 2
+    elif getattr(args, "names", False):
+        mode = 3
     else:
         mode = ask_menu_choice()
 
     # Directory
-    directory = args.dir or choose_directory("Search" if mode == 1 else "Analyze")
+    directory = args.dir or choose_directory("Search" if mode in (1, 3) else "Analyze")
 
     if mode == 1:
         case_sensitive = args.case_sensitive or ask_yes_no("Case-sensitive search?", default=False)
@@ -122,7 +126,7 @@ def main():
             excluded_exts=excluded_exts,
             included_exts=included_exts
         )
-    else:
+    elif mode == 2:
         out = run_stats(
             entry_file=entry_file,
             directory=directory,
@@ -130,8 +134,11 @@ def main():
             excluded_exts=excluded_exts,
             included_exts=included_exts
         )
-
-    if out:
-        print("\nResults saved to:")
-        print(out)
-    print("\nDone.")
+    else:
+        out = run_name_search(
+            entry_file=entry_file,
+            directory=directory,
+            excluded_dirs=excluded_dirs,
+            excluded_exts=excluded_exts,
+            included_exts=included_exts
+        )

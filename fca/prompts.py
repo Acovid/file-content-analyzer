@@ -42,13 +42,14 @@ def ask_menu_choice() -> int:
     print("\nChoose an operation:")
     print("  1) Search for strings in files")
     print("  2) Count lines, words, and characters in files")
+    print("  3) Search for files by name (patterns)")
     while True:
         choice = input("\nEnter choice [1]: ").strip()
         if choice == "":
             return 1
-        if choice in {"1", "2"}:
+        if choice in {"1", "2", "3"}:
             return int(choice)
-        print("Please enter 1 or 2.")
+        print("Please enter 1, 2, or 3.")
 
 
 def choose_directory(action_word: str) -> str:

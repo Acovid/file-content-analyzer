@@ -1,0 +1,15 @@
+// One filename or glob pattern per line
+// Empty lines are ignored
+// Lines starting with // are comments
+//
+// Examples:
+// wp-config.php
+// *.php
+// style*.css
+// *checkout*
+
+membrane2*.jpg
+homogen*.jpg
+equip-2*.jpg
+equip-1?.jpg
+beringLogo.png

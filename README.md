@@ -1,14 +1,17 @@
 # File Content Analyzer
 
-A Python utility for analyzing text files across a directory tree.
+A Python utility for analyzing files across a directory tree.
 
-It supports two operation modes:
+It supports three operation modes:
 
 1) **String Search**  
    Search for one or more strings in files, count occurrences, and generate a report.
 
 2) **File Statistics**  
-   Count lines, words, and characters across files, including per-extension totals, and generate a report.
+   Count lines, words, and characters across files, including per-extension totals.
+
+3) **Filename Search**  
+   Search for files by name or glob-style patterns and report where they are located.
 
 The tool is interactive by default, but also supports non-interactive usage via command-line arguments.
 
@@ -17,18 +20,15 @@ The tool is interactive by default, but also supports non-interactive usage via 
 ## Features
 
 - Recursively scans a chosen directory and its subdirectories
-- Two modes:
+- Three modes:
   - String search with per-string occurrence counts per file
   - File statistics (lines / words / characters) with per-extension totals
-- Accepts multiple search strings:
-  - From `search-strings.txt` (optional)
-  - And/or manual input
-- Supports case-sensitive and case-insensitive search
+  - Filename search using exact names or glob patterns
+- Accepts batch input files and/or manual input
+- Supports case-sensitive and case-insensitive matching
 - Excludes directories such as `.venv` and `.vscode`
-- Supports file type filtering:
-  - Include-only list (process only specific extensions)
-  - Exclude list (skip specific extensions)
-- Skips unreadable/binary files gracefully
+- Supports file type filtering (include / exclude extensions)
+- Skips unreadable or binary files gracefully
 - Skips analyzing the program file itself
 - Produces timestamped reports saved under `analysis-results/`
 - Uses persistent settings stored in `config.json`
@@ -71,6 +71,7 @@ Typical layout:
     ├── run-file-content-analyzer.command
     ├── config.json                  (optional; auto-created)
     ├── search-strings.txt           (optional)
+    ├── file-names.txt               (optional)
     ├── analysis-results/            (auto-created; gitignored)
     ├── fca/
     │   ├── __init__.py
@@ -80,6 +81,7 @@ Typical layout:
     │   ├── traversal.py
     │   ├── search_mode.py
     │   ├── stats_mode.py
+    │   ├── name_search_mode.py
     │   └── reporting.py
     ├── tests/
     │   ├── __init__.py
@@ -99,10 +101,11 @@ From the project folder:
     python file_content_analyzer.py
 
 You will be guided through interactive prompts:
-- choose mode (search or statistics)
+
+- choose mode (string search, statistics, or filename search)
 - choose directory (default is NO → you enter a path)
 - configure include/exclude file types (optional)
-- and for search mode: select case sensitivity and enter search strings
+- mode-specific options (case sensitivity, patterns, etc.)
 
 ### Option B: macOS Launcher
 
@@ -128,17 +131,20 @@ Examples:
 
     analysis-results/string_search_20251214-112233.txt
     analysis-results/file_stats_20251214-113015.txt
+    analysis-results/name_search_20251214-114502.txt
 
 Reports include:
+
 - operation type
 - directory analyzed
 - summary totals
 - per-file details
 - (statistics mode) per-extension totals
+- (filename search) list of matching paths per pattern
 
 ---
 
-## Using search-strings.txt
+## Using search-strings.txt (String Search Mode)
 
 You can place an optional file:
 
@@ -147,6 +153,7 @@ You can place an optional file:
 in the same folder as `file_content_analyzer.py`.
 
 Rules:
+
 - One string per line
 - Empty lines ignored
 - Lines starting with `//` are comments
@@ -164,11 +171,46 @@ When the tool starts, it will detect this file and ask whether to use it.
 
 ---
 
+## Using file-names.txt (Filename Search Mode)
+
+You can place an optional file:
+
+    file-names.txt
+
+in the same folder as `file_content_analyzer.py`.
+
+Rules:
+
+- One filename or glob pattern per line
+- Empty lines ignored
+- Lines starting with `//` are comments
+
+Supported patterns use standard glob syntax:
+
+- `*.php`
+- `config.json`
+- `style*.css`
+- `*checkout*`
+
+Example:
+
+    // One filename or pattern per line
+    // Lines starting with // are comments
+    
+    wp-config.php
+    *.md
+    style*.css
+
+When filename search mode is selected, the tool will detect this file and ask whether to use it.
+
+---
+
 ## File Type Filtering (Include / Exclude Extensions)
 
-You can filter by file extension (without dots). Examples: `py`, `txt`, `js`.
+You can filter by file extension (without dots). Examples: `py`, `txt`, `jpg`.
 
 ### Include-only list
+
 If `included_extensions` is not empty, ONLY those extensions are processed.
 
 Example:
@@ -178,14 +220,22 @@ Example:
 Processes only `.py` and `.txt` files.
 
 ### Exclude list
+
 `excluded_extensions` is always applied (even after include-only).
 
 Example:
 
-    excluded_extensions = ["log", "map", "min.js"]
+    excluded_extensions = ["log", "map", "jpg"]
 
-Note: The tool filters by the final extension (`.js`, `.css`, etc.).  
-`min.js` is not a separate extension. If you want to exclude minified assets reliably, you typically exclude by `.js` or add a filename rule later as an enhancement.
+### Important note for Filename Search Mode
+
+Filename search operates on **file names**, not file contents.
+
+If certain file types (e.g. images) are excluded via configuration,
+they will not be discovered during filename search.
+
+If you want to search for files such as `.jpg`, `.png`, or `.pdf`,
+ensure those extensions are **not excluded** in `config.json`.
 
 ---
 
@@ -203,6 +253,7 @@ Example `config.json`:
     }
 
 Rules:
+
 - If `included_extensions` is empty: all extensions are allowed
 - If `included_extensions` is not empty: only those are allowed
 - Then `excluded_extensions` are removed
@@ -227,6 +278,10 @@ String search mode:
 Statistics mode:
 
     python file_content_analyzer.py --stats --dir /path/to/scan
+
+Filename search mode:
+
+    python file_content_analyzer.py --names --dir /path/to/scan
 
 Case-sensitive search:
 
@@ -258,9 +313,10 @@ Tests are located in:
 
 Run all tests:
 
-    python -m unittest -v
+    python3 -m unittest -v
 
 These tests cover:
+
 - extension normalization
 - traversal include/exclude behavior
 - excluded directory behavior
@@ -270,10 +326,12 @@ These tests cover:
 ## Troubleshooting
 
 ### “Can’t open file ... file_content_analyzer.py”
+
 This typically happens if you ran the launcher from a copied folder missing the script, or you created a copy instead of an alias.
 Make sure the launcher resides in the same project folder and points to the correct script.
 
 ### The output folder is not where I expect
+
 Reports are always written next to the main script under:
 
     analysis-results/
@@ -281,7 +339,9 @@ Reports are always written next to the main script under:
 If you see it elsewhere, you likely ran a different copy of the tool.
 
 ### Some files are skipped
-The tool ignores files it cannot decode as text (or that error on read). This is expected behavior.
+
+The tool ignores files it cannot decode as text (or that error on read).
+Files may also be skipped due to extension filters in `config.json`.
 
 ---
 
