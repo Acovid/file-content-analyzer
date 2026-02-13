@@ -40,7 +40,7 @@ analysis-results/
 # ------------------
 # Configuration file
 # ------------------
-config.json
+# config.json
 
 # ------------------------------------
 # Folder with the files to be searched

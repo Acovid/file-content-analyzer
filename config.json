@@ -1,0 +1,9 @@
+{
+  "default_directory": "/Users/aco/Development/MAMP/htdocs/BeringNew/wp-content/plugins/12d-elementor-addons",
+  "excluded_dirs": [
+    ".venv",
+    ".vscode"
+  ],
+  "excluded_extensions": [],
+  "included_extensions": []
+}
