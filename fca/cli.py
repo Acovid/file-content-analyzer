@@ -133,6 +133,10 @@ def main() -> None:
     if "excluded_dirs" not in cfg:
         cfg["excluded_dirs"] = sorted(list(merged_excluded_dirs(cfg)))
 
+    # Ensure exclude_hidden_dirs exists in cfg
+    if "exclude_hidden_dirs" not in cfg:
+        cfg["exclude_hidden_dirs"] = False
+
     # One-shot mode: edit config and exit
     if args.edit_config:
         edit_config_interactive(cfg)
@@ -149,6 +153,7 @@ def main() -> None:
     # CLI overrides (one-run; we also persist unless --no-config)
     if args.include is not None:
         cfg["included_extensions"] = normalize_ext_list(args.include.split(","))
+
     if args.exclude is not None:
         cfg["excluded_extensions"] = normalize_ext_list(args.exclude.split(","))
 
@@ -160,6 +165,9 @@ def main() -> None:
     excluded_exts = excluded_extensions(cfg)
     included_exts = included_extensions(cfg)
 
+    # New: optionally skip all hidden directories (.git, .idea, etc.)
+    exclude_hidden_dirs = cfg.get("exclude_hidden_dirs", False)
+
     # Determine mode (CLI flags override interactive selection)
     if args.search:
         mode = 1
@@ -170,25 +178,33 @@ def main() -> None:
     else:
         mode = ask_menu_choice()
 
-    # Choose directory (priority: --dir > remembered default_directory > user input)
+    # Choose directory
+    # Priority:
+    #   1) --dir CLI argument
+    #   2) remembered default_directory from config.json
+    #   3) manual user input
     cfg_default_dir = default_directory(cfg)
+
     directory = args.dir or choose_directory(
         "Search" if mode in (1, 3) else "Analyze",
         default_path=cfg_default_dir,
     )
 
-    # Remember last-used directory (absolute), unless config is disabled
+    # Remember last-used directory (absolute path), unless config disabled
     if not args.no_config:
         abs_dir = os.path.abspath(directory)
+
         if os.path.isdir(abs_dir):
             cfg["default_directory"] = abs_dir
             save_config(entry_file, cfg)
 
-    # Dispatch to the selected mode
+    # Dispatch to selected mode
     if mode == 1:
         case_sensitive = args.case_sensitive or ask_yes_no(
-            "Case-sensitive search?", default=False
+            "Case-sensitive search?",
+            default=False,
         )
+
         out = run_search(
             entry_file=entry_file,
             cfg=cfg,
@@ -206,6 +222,7 @@ def main() -> None:
             excluded_dirs=excluded_dirs,
             excluded_exts=excluded_exts,
             included_exts=included_exts,
+            exclude_hidden_dirs=exclude_hidden_dirs,
         )
 
     else:
@@ -218,7 +235,8 @@ def main() -> None:
         )
 
     # The mode functions already print where the output report was saved.
-    # We keep `out` mainly for potential future enhancements (e.g., open report automatically).
+    # We keep `out` mainly for potential future enhancements
+    # (e.g. automatically opening the report file).
     _ = out
 
 

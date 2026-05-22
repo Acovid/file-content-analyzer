@@ -6,4 +6,4 @@
 // warning
 // TODO
 
-require_once PR_PLUGIN_PATH . 'includes/widgets/register.php';
+<textarea name="vw_about_excursion"
