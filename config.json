@@ -1,5 +1,5 @@
 {
-  "default_directory": "/Users/aco/Development/MAMP/htdocs/BeringNew/wp-content/plugins/12d-elementor-addons",
+  "default_directory": "/Users/aco/Developer/MAMP/htdocs/Bering/wp-content/themes/hello-elementor-child",
   "excluded_dirs": [
     ".venv",
     ".vscode",

@@ -8,8 +8,9 @@ for interactive terminal usage.
 Responsibilities:
 - standardized yes/no prompts with defaults
 - menu selection prompts
-- directory selection prompts (supports a remembered default path)
+- directory selection prompts with remembered default paths
 - extension list input parsing
+- validated non-negative integer input
 
 Keeping prompts here avoids duplicating input logic
 across different modes and keeps the CLI flow readable.
@@ -22,15 +23,10 @@ def ask_yes_no(prompt: str, default=None) -> bool:
     """
     Ask a yes/no question and return True for yes, False for no.
 
-    Args:
-        prompt: The question to show (without the "(y/n)" suffix).
-        default: True/False/None. If True, ENTER means yes. If False, ENTER means no.
-                 If None, the user must type y/n.
-
-    Returns:
-        bool: True for yes, False for no.
+    If default is True or False, pressing ENTER accepts that default.
     """
     suffix = " (y/n): "
+
     if default is True:
         suffix = " (y/n) [y]: "
     elif default is False:
@@ -39,27 +35,87 @@ def ask_yes_no(prompt: str, default=None) -> bool:
     while True:
         ans = input(prompt + suffix).strip().lower()
 
-        # ENTER selects default, if provided
         if ans == "":
             if default is not None:
                 return default
+
             print("Please answer y or n.")
             continue
 
         if ans in ("y", "yes"):
             return True
+
         if ans in ("n", "no"):
             return False
 
         print("Please answer y or n.")
 
 
+def ask_non_negative_int(
+    prompt: str,
+    default: int | None = None,
+) -> int:
+    """
+    Ask for a non-negative integer.
+
+    Examples of valid values:
+    - 0
+    - 1
+    - 5
+    - 10
+
+    If ``default`` is provided, pressing ENTER returns that value.
+    """
+    if default is not None and default < 0:
+        raise ValueError(
+            "default must be 0 or greater"
+        )
+
+    while True:
+        if default is None:
+            raw = input(
+                f"{prompt}: "
+            ).strip()
+        else:
+            raw = input(
+                f"{prompt} [{default}]: "
+            ).strip()
+
+        if raw == "":
+            if default is not None:
+                return default
+
+            print(
+                "Please enter a whole number of 0 or greater."
+            )
+            continue
+
+        try:
+            value = int(raw)
+
+        except ValueError:
+            print(
+                "Please enter a whole number of 0 or greater."
+            )
+            continue
+
+        if value < 0:
+            print(
+                "Please enter a whole number of 0 or greater."
+            )
+            continue
+
+        return value
+
+
 def ask_menu_choice() -> int:
     """
-    Ask the user to choose which operation mode to run.
+    Ask user to choose operation.
 
     Returns:
-        int: 1 (string search), 2 (file stats), 3 (filename search).
+    - 1: String Search
+    - 2: File Statistics
+    - 3: Filename Search
     """
     print("\nChoose an operation:")
     print("  1) Search for strings in files")
@@ -67,73 +123,87 @@ def ask_menu_choice() -> int:
     print("  3) Search for files by name (patterns)")
 
     while True:
-        choice = input("\nEnter choice [1]: ").strip()
+        choice = input(
+            "\nEnter choice [1]: "
+        ).strip()
+
         if choice == "":
             return 1
-        if choice in {"1", "2", "3"}:
+
+        if choice in {
+            "1",
+            "2",
+            "3",
+        }:
             return int(choice)
-        print("Please enter 1, 2, or 3.")
+
+        print(
+            "Please enter 1, 2, or 3."
+        )
 
 
-def choose_directory(action_word: str, default_path: str | None = None) -> str:
+def choose_directory(
+    action_word: str,
+    default_path: str | None = None,
+) -> str:
     """
-    Ask the user which directory should be processed.
+    Ask which directory should be processed.
 
     Behavior:
-    - First asks if the user wants to use the current directory (default: NO).
-    - If not using current directory:
-      - If default_path is provided, ENTER accepts it.
-      - Otherwise, user must type a valid path.
-
-    Args:
-        action_word: Short word used in prompts (e.g., "Search", "Analyze").
-        default_path: Optional remembered directory path (from config.json).
-
-    Returns:
-        str: "." for current directory or a validated full directory path.
+    - asks whether to use the current directory, default NO
+    - if a remembered default path exists, ENTER accepts it
     """
     use_current = ask_yes_no(
         f"{action_word} in the current directory where the program is?",
-        default=False
+        default=False,
     )
+
     if use_current:
         return "."
 
     while True:
         if default_path:
             path = input(
-                f"Enter full directory path to {action_word.lower()} [{default_path}]: "
+                f"Enter full directory path to "
+                f"{action_word.lower()} "
+                f"[{default_path}]: "
             ).strip()
+
             if path == "":
                 path = default_path
+
         else:
             path = input(
-                f"Enter full directory path to {action_word.lower()}: "
+                f"Enter full directory path to "
+                f"{action_word.lower()}: "
             ).strip()
 
         if os.path.isdir(path):
             return path
 
-        print("Invalid directory. Try again.\n")
+        print(
+            "Invalid directory. Try again.\n"
+        )
 
 
-def ask_extensions_list(label: str) -> set:
+def ask_extensions_list(
+    label: str,
+) -> set:
     """
-    Ask the user for a comma-separated list of file extensions.
+    Parse a comma-separated extension list.
 
-    Notes:
-    - Extensions should be provided without dots (but dots are tolerated).
-    - Returns a set of normalized extensions in lowercase.
-
-    Example input:
-        "py, txt, .js"
-
-    Returns:
-        set[str]: {"py", "txt", "js"}
+    Leading dots are tolerated and values are normalized to lowercase.
     """
-    raw = input(label + " ").strip()
-    parts = [p.strip().lower().lstrip(".") for p in raw.split(",") if p.strip()]
+    raw = input(
+        label + " "
+    ).strip()
+
+    parts = [
+        p.strip().lower().lstrip(".")
+        for p in raw.split(",")
+        if p.strip()
+    ]
+
     return set(parts)
-
 
 # End of file prompts.py

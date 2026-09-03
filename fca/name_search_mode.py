@@ -89,7 +89,14 @@ def _matches_any_pattern(filename: str, patterns: list, case_sensitive: bool) ->
     return matches
 
 
-def run(entry_file: str, directory: str, excluded_dirs: set, excluded_exts: set, included_exts: set) -> str | None:
+def run(
+    entry_file: str,
+    directory: str,
+    excluded_dirs: set,
+    excluded_exts: set,
+    included_exts: set,
+    exclude_hidden_dirs: bool = False,
+) -> str | None:
     """
     Search for files by name/pattern within directory (recursive).
 
@@ -107,7 +114,13 @@ def run(entry_file: str, directory: str, excluded_dirs: set, excluded_exts: set,
 
     script_path = os.path.abspath(entry_file)
 
-    for path in iter_files(directory, excluded_dirs, excluded_exts, included_exts):
+    for path in iter_files(
+        directory,
+        excluded_dirs,
+        excluded_exts,
+        included_exts,
+        exclude_hidden_dirs=exclude_hidden_dirs,
+    ):
         # Skip the program file itself
         if os.path.abspath(path) == script_path:
             continue
@@ -125,3 +138,5 @@ def run(entry_file: str, directory: str, excluded_dirs: set, excluded_exts: set,
         hits_by_pattern=hits_by_pattern
     )
     return out
+  
+# End of file search_mode.py

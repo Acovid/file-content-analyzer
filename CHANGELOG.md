@@ -9,6 +9,59 @@ The project follows a simplified semantic versioning scheme:
 
 ---
 
+## [3.2.0] - 2026-09-03
+
+### Added
+
+- New **Detailed Match Context** option for String Search
+- Detailed reports now show:
+  - full matching file paths
+  - exact source line numbers
+  - complete matching source lines
+  - configurable numbers of context lines before and after matches
+  - explicit `MATCH:` annotations for every occurrence
+  - one-based match column ranges
+- Configurable context size with a default of 5 lines before and after each match
+- Support for zero context lines to display matching lines only
+- Automatic merging of overlapping context windows
+- Automatic merging of directly adjacent context windows
+- Long/minified-line protection:
+  - oversized matching lines are reduced to focused character excerpts
+  - the complete matched search string remains visible
+  - truncation is explicitly indicated
+  - distant matches on the same oversized line can produce separate focused excerpts
+- New interactive prompt:
+  - `Include detailed match context?`
+- New validated non-negative integer prompt for context-line selection
+- New CLI flag `--detailed`
+- New CLI option `--context-lines`
+- Match-position collection including:
+  - absolute character offsets
+  - source line number
+  - starting column
+  - ending column
+- New String Search unit tests covering match positions, context construction, context merging, detailed report generation, and long-line handling
+
+### Changed
+
+- String Search can now generate either:
+  - the existing compact Summary report
+  - a Summary report followed by Detailed Match Context
+- Existing String Search occurrence-count semantics are preserved
+- Nearby matching lines are grouped into consolidated source excerpts to reduce duplicated context
+- Hidden-directory exclusion is now applied consistently across:
+  - String Search
+  - File Statistics
+  - Filename Search
+- README expanded to document Detailed Match Context reporting, context behavior, long-line handling, CLI options, directory filtering, and the expanded test suite
+
+### Fixed
+
+- Fixed inconsistent handling of `exclude_hidden_dirs`, which previously affected File Statistics but was not propagated to String Search and Filename Search
+- Resolved program-version metadata mismatch by advancing the application version to 3.2.0
+
+---
+
 ## [3.1.0] - 2025-12-15
 
 ### Added

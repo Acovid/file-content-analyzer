@@ -6,4 +6,6 @@
 // warning
 // TODO
 
-<textarea name="vw_about_excursion"
+bering-btn-primary
+bering-btn-secondary
+bering-btn-tertiary
